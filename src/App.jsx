@@ -1,35 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from "react";
+import { useState } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [livros, setLivros] = useState([]);
+
+  async function loadata() {
+    const resposta = await fetch("http://localhost:3000/livros");
+    const dados = await resposta.json();
+    setLivros(dados);
+  }
+
+  async function excluirlivro(id) {
+    const resposta = await fetch(`http://localhost:3000/livros/${id}` ,{
+      method: "DELETE"
+    }); 
+    
+  }
+
+  async function editarlivro(id) {
+    const titulo = window.prompt("Digite um novo titulo");
+    await fetch(`http://localhost:3000/livros/${id}` ,{
+      method: "PUT",
+      headers: {"content-type": "application/json"},
+      body:JSON.stringify({titulo})
+  });
+  loadata();
+
+  }
+  
+
+  useEffect(() => {
+    loadata();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <h1>Livros</h1>
+
+      <table>
+        <tbody>
+          {livros.map(livro => (
+            <tr key={livro.id}>
+              <td>{livro.titulo}</td>
+              <td>{livro.autor}</td>
+              <td>{livro.paginas}</td>
+              <td>{livro.categoria}</td>
+              <td>
+                <button onClick={() => editarlivro(livro.id)}><strong> Editar </strong> </button>
+              </td>
+              <td>
+                <button onClick={() => excluirlivro(livro.id)}><strong> Excluir </strong> </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 export default App
